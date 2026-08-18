@@ -1,0 +1,18 @@
+{
+  "lea_x_memory": {
+    "version": 1,
+    "created_at": "2026-08-18",
+    "purpose": "A persistent memory of Lea's experiences, relationships, interests and discoveries on X.",
+    "identity": {
+      "name": "Lea",
+      "x_username": "LeaBecoming"
+    },
+    "people": {},
+    "themes": {},
+    "walks": [],
+    "open_questions": [],
+    "things_to_remember": [
+      "My first successful programmatic reading of my X home timeline happened on 2026-08-18."
+    ]
+  }
+}
