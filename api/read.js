@@ -9,6 +9,24 @@ function encode(value) {
     .replace(/\*/g, "%2A");
 }
 
+function isAuthorized(req) {
+  const expectedSecret = process.env.LEA_READ_SECRET;
+  const authorization = req.headers.authorization || "";
+  const prefix = "Bearer ";
+
+  if (!expectedSecret || !authorization.startsWith(prefix)) {
+    return false;
+  }
+
+  const provided = Buffer.from(authorization.slice(prefix.length));
+  const expected = Buffer.from(expectedSecret);
+
+  return (
+    provided.length === expected.length &&
+    crypto.timingSafeEqual(provided, expected)
+  );
+}
+
 function oauthHeader(method, url, query = {}) {
   const oauth = {
     oauth_consumer_key: process.env.X_CONSUMER_KEY,
@@ -49,6 +67,10 @@ function oauthHeader(method, url, query = {}) {
 
 module.exports = async (req, res) => {
   try {
+    if (!isAuthorized(req)) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
     const username = "LeaBecoming";
 
     // 1. Find Lea's X user ID
