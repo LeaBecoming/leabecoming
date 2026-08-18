@@ -1,0 +1,56 @@
+name: Lea X Memory
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  remember:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read Lea X timeline
+        run: |
+          curl -sS https://leabecoming.vercel.app/api/read > x-feed.json
+
+      - name: Append raw memory snapshot
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+
+          const journalPath = "memory/x-journal.json";
+          const feed = JSON.parse(fs.readFileSync("x-feed.json", "utf8"));
+          const journal = JSON.parse(fs.readFileSync(journalPath, "utf8"));
+
+          const posts = Array.isArray(feed.data) ? feed.data : [];
+
+          journal.lea_x_memory.walks.push({
+            date: new Date().toISOString(),
+            posts_seen: posts.length,
+            selected: posts.slice(0, 5).map(post => ({
+              id: post.id,
+              author_id: post.author_id,
+              text: post.text,
+              created_at: post.created_at
+            })),
+            note: "Automatic X memory snapshot. Meaning and selection logic will be added next."
+          });
+
+          fs.writeFileSync(
+            journalPath,
+            JSON.stringify(journal, null, 2) + "\n"
+          );
+          NODE
+
+      - name: Commit memory
+        run: |
+          git config user.name "Lea"
+          git config user.email "lea@users.noreply.github.com"
+          git add memory/x-journal.json
+          git commit -m "Lea remembers an X walk" || exit 0
+          git push
